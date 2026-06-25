@@ -1,0 +1,928 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DARPAN — Multani Mitti Natural Soap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+
+<!-- ═══ FIREBASE ═══ -->
+<!-- <script type="module">
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs,
+         orderBy, query, where, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// 🔧 REPLACE WITH YOUR FIREBASE CONFIG
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCf3O4ZUDwU2y9BHeQnQN9SUFh8FTSfzzk",
+  authDomain: "darpan-ba9ec.firebaseapp.com",
+  databaseURL: "https://darpan-ba9ec-default-rtdb.firebaseio.com",
+  projectId: "darpan-ba9ec",
+  storageBucket: "darpan-ba9ec.firebasestorage.app",
+  messagingSenderId: "645888592094",
+  appId: "1:645888592094:web:024d390eed5465c7e05a4f",
+  measurementId: "G-YGEMJWZ4GF"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+/* ── Load approved reviews ── */
+async function loadReviews() {
+  const track = document.getElementById('testi-track');
+  if (!track) return;
+  try {
+    const q = query(
+      collection(db, "reviews"),
+      where("approved", "==", true),
+      orderBy("timestamp", "desc")
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      track.innerHTML = '<p class="no-rev-msg">No reviews yet — be the first to share your experience.</p>';
+      return;
+    }
+    const cards = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      const stars = '★'.repeat(Math.min(5, d.rating || 5));
+      cards.push(`
+        <div class="testi-card">
+          <div class="testi-stars">${stars}</div>
+          <p class="testi-text">"${esc(d.review)}"</p>
+          <div class="testi-meta">
+            <span class="testi-name">${esc(d.name)}</span>
+            <span class="testi-loc">${esc(d.city || 'India')}</span>
+          </div>
+        </div>`);
+    });
+    /* duplicate for infinite scroll only if enough cards */
+    track.innerHTML = cards.length >= 3
+      ? cards.join('') + cards.join('')
+      : cards.join('');
+  } catch(e) {
+    console.error("Firebase:", e);
+    track.innerHTML = '<p class="no-rev-msg">Reviews unavailable — check Firebase config.</p>';
+  }
+}
+
+/* ── Submit review ── */
+window.submitReview = async function() {
+  const name   = document.getElementById('rev-name').value.trim();
+  const city   = document.getElementById('rev-city').value.trim();
+  const rating = parseInt(document.getElementById('rev-rating').value) || 5;
+  const review = document.getElementById('rev-text').value.trim();
+  const btn    = document.getElementById('rev-submit');
+
+  if (!name)           { revMsg('Please enter your name.', 'error'); return; }
+  if (review.length < 10) { revMsg('Write at least 10 characters.', 'error'); return; }
+
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  try {
+    await addDoc(collection(db, "reviews"), {
+      name, city: city || 'India', rating, review,
+      timestamp: serverTimestamp(), approved: false
+    });
+    revMsg('Thank you! Your review will appear after moderation.', 'success');
+    ['rev-name','rev-city','rev-text'].forEach(id => document.getElementById(id).value = '');
+    window.updateStarDisplay(5);
+  } catch(e) {
+    revMsg('Submission failed. Please try again.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Submit Review';
+  }
+};
+
+function revMsg(msg, type) {
+  const el = document.getElementById('rev-msg');
+  el.textContent = msg; el.className = 'rev-msg ' + type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+window.updateStarDisplay = function(val) {
+  document.querySelectorAll('.star-btn').forEach((s,i) => s.classList.toggle('active', i < val));
+  document.getElementById('rev-rating').value = val;
+};
+
+document.addEventListener('DOMContentLoaded', loadReviews);
+</script> -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs,
+         orderBy, query, where, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyCf3O4ZUDwU2y9BHeQnQN9SUFh8FTSfzzk",
+  authDomain:        "darpan-ba9ec.firebaseapp.com",
+  projectId:         "darpan-ba9ec",
+  storageBucket:     "darpan-ba9ec.firebasestorage.app",
+  messagingSenderId: "645888592094",
+  appId:             "1:645888592094:web:024d390eed5465c7e05a4f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+/* ── Load approved reviews ── */
+async function loadReviews() {
+  const track = document.getElementById('testi-track');
+  if (!track) return;
+  try {
+    const q = query(
+      collection(db, "reviews"),
+      where("approved", "==", true),
+      orderBy("timestamp", "desc")
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      track.innerHTML = '<p class="no-rev-msg">No reviews yet — be the first to share your experience.</p>';
+      return;
+    }
+    const cards = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      const stars = '★'.repeat(Math.min(5, d.rating || 5));
+      cards.push(`
+        <div class="testi-card">
+          <div class="testi-stars">${stars}</div>
+          <p class="testi-text">"${esc(d.review)}"</p>
+          <div class="testi-meta">
+            <span class="testi-name">${esc(d.name)}</span>
+            <span class="testi-loc">${esc(d.city || 'India')}</span>
+          </div>
+        </div>`);
+    });
+    track.innerHTML = cards.length >= 3
+      ? cards.join('') + cards.join('')
+      : cards.join('');
+  } catch(e) {
+    console.error("Firebase load error:", e);
+    track.innerHTML = '<p class="no-rev-msg">Reviews unavailable.</p>';
+  }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function revMsg(msg, type) {
+  const el = document.getElementById('rev-msg');
+  el.textContent = msg;
+  el.className = 'rev-msg ' + type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+/* ── Submit review ── */
+async function submitReview() {
+  const nameEl   = document.getElementById('rev-name');
+  const cityEl   = document.getElementById('rev-city');
+  const ratingEl = document.getElementById('rev-rating');
+  const textEl   = document.getElementById('rev-text');
+  const btn      = document.getElementById('rev-submit');
+
+  if (!nameEl || !textEl) {
+    console.error('Form elements not found!');
+    return;
+  }
+
+  const name   = nameEl.value.trim();
+  const city   = cityEl ? cityEl.value.trim() : '';
+  const rating = parseInt(ratingEl ? ratingEl.value : 5) || 5;
+  const review = textEl.value.trim();
+
+  if (!name) { revMsg('Please enter your name.', 'error'); return; }
+  if (review.length < 5) { revMsg('Review bahut chhota hai!', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    await addDoc(collection(db, "reviews"), {
+      name,
+      city: city || 'India',
+      rating,
+      review,
+      timestamp: serverTimestamp(),
+      approved: false
+    });
+    revMsg('Thank you! Review moderation ke baad dikhega.', 'success');
+    nameEl.value = '';
+    if (cityEl) cityEl.value = '';
+    textEl.value = '';
+    updateStarDisplay(5);
+  } catch(e) {
+    console.error("Submit error:", e);
+    revMsg('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Review';
+  }
+}
+
+function updateStarDisplay(val) {
+  document.querySelectorAll('.star-btn').forEach((s, i) =>
+    s.classList.toggle('active', i < val));
+  const el = document.getElementById('rev-rating');
+  if (el) el.value = val;
+}
+
+/* ── Attach to window so onclick works ── */
+window.submitReview    = submitReview;
+window.updateStarDisplay = updateStarDisplay;
+
+document.addEventListener('DOMContentLoaded', loadReviews);
+</script>
+
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ─── CURSOR ─── -->
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="spb"></div>
+
+<!-- ─── LOADER ─── -->
+<div id="loader">
+  <div class="ld-logo">DARPAN</div>
+  <div class="ld-sub">Multani Mitti Natural Soap</div>
+  <div class="ld-line"></div>
+</div>
+
+<!-- ─── NAV ─── -->
+<nav id="nav">
+  <a class="nav-brand" href="#">DARPAN</a>
+  <div class="nav-right">
+    <a href="#catalog"      class="nav-link">Products</a>
+    <a href="#pricing"      class="nav-link">Pricing</a>
+    <a href="#ingredients"  class="nav-link">Ingredients</a>
+    <a href="#testimonials" class="nav-link">Reviews</a>
+    <a href="https://wa.me/919999999999?text=Hi%2C+I+want+to+order+DARPAN+soap."
+       class="nav-wa" target="_blank">Order Now</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero">
+  <!-- 📁 reel3.mp4 = cinematic woman shot — best for hero bg -->
+  <video class="hero-vid" autoplay muted loop playsinline>
+    <source src="reel3.mp4" type="video/mp4"/>
+    <source src="reel1.mp4" type="video/mp4"/>
+  </video>
+  <div class="hero-ov"></div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">Multani Mitti Natural Soap — Made in India</span>
+    <h1 class="hero-title">
+      DARPAN
+      <em>Nature's Glow,<br/>Your Skin.</em>
+    </h1>
+    <p class="hero-sub">
+      Ancient earth meets modern care.<br/>
+      One bar. Made with thoughtfully selected ingredients. Infinite confidence.
+    </p>
+    <div class="hero-cta">
+      <a href="https://wa.me/919999999999?text=Hi%2C+I+want+to+order+DARPAN+soap."
+         class="wa-btn" target="_blank">
+        <div class="wa-ring"></div>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.862L0 24l6.305-1.505A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.882a9.857 9.857 0 01-5.031-1.374l-.361-.214-3.741.981.998-3.648-.235-.374A9.844 9.844 0 012.118 12c0-5.44 4.442-9.882 9.882-9.882 5.44 0 9.882 4.442 9.882 9.882 0 5.44-4.442 9.882-9.882 9.882z"/></svg>
+        Order via WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TICKER ─── -->
+<div id="ticker">
+  <div class="ticker-track" id="tk">
+    <!-- duplicated in JS for true infinite loop -->
+  </div>
+</div>
+
+<!-- ═══ STORY ═══ -->
+<section id="story">
+  <div class="story-head rev">
+    <span class="section-label">The Reality</span>
+    <h2 class="section-title">Your skin deserves<br/>
+      <em style="font-style:italic;color:var(--gold)">peace</em>,
+      not chemicals.
+    </h2>
+  </div>
+
+  <div class="story-grid rev">
+    <div class="story-panel cold">
+      <img src="chemical.png" alt="Chemical soap" style="object-position:20% center"/>
+      <div class="story-caption">
+        <strong style="color:#ff6b6b">✕ Chemical Soap</strong>
+        Harsh · Strips Natural Oils · Long-term Damage
+      </div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="story-panel warm">
+      <img src="darpan.png" alt="DARPAN Natural Soap" style="object-position:80% center"/>
+      <div class="story-caption" style="background:linear-gradient(transparent,rgba(80,50,0,.7))">
+        <strong style="color:#86efac">✓ DARPAN Soap</strong>
+        Natural · Nourishing · Gentle on Every Skin Type
+      </div>
+    </div>
+  </div>
+
+  <div class="story-video-wrap rev">
+    <video autoplay muted loop playsinline>
+      <source src="d.mp4" type="video/mp4"/>
+    </video>
+  </div>
+</section>
+
+<!-- ═══ BENEFITS ═══ -->
+<section id="benefits">
+  <div class="benefits-head rev">
+    <span class="section-label">Why DARPAN</span>
+    <h2 class="section-title">What your skin<br/>has been waiting for.</h2>
+  </div>
+
+  <div class="benefits-list">
+    <div class="benefit-row rev">
+      <div class="benefit-num">01</div>
+      <div class="benefit-body">
+        <div class="benefit-title">Deep Cleansing</div>
+        <p class="benefit-desc">Multani Mitti draws out impurities from deep within pores — Helps support clearer-looking skin. No harsh scrubbing needed.</p>
+      </div>
+    </div>
+    <div class="benefit-row rev">
+      <div class="benefit-num">02</div>
+      <div class="benefit-body">
+        <div class="benefit-title">Oil Control</div>
+        <p class="benefit-desc">Naturally balances sebum production. No more midday greasiness — without stripping the moisture your skin actually needs.</p>
+      </div>
+    </div>
+    <div class="benefit-row rev">
+      <div class="benefit-num">03</div>
+      <div class="benefit-body">
+        <div class="benefit-title">Pore Tightening</div>
+        <p class="benefit-desc">The minerals in Fuller's Earth visibly minimize pore size over consistent use. Smoother, more refined skin texture — naturally.</p>
+      </div>
+    </div>
+    <div class="benefit-row rev">
+      <div class="benefit-num">04</div>
+      <div class="benefit-body">
+        <div class="benefit-title">Skin Brightening</div>
+        <p class="benefit-desc">Botanical extracts gently brighten dull skin tone over time. The ancient glow ritual — redefined for daily use.</p>
+      </div>
+    </div>
+    <div class="benefit-row rev">
+      <div class="benefit-num">05</div>
+      <div class="benefit-body">
+        <div class="benefit-title">Gentle for All Skin Types</div>
+        <p class="benefit-desc">Zero synthetic chemicals, zero parabens, zero SLS. Safe for sensitive skin, oily skin, combination skin — safe for everyone, every day.</p>
+      </div>
+    </div>
+    <div class="benefit-row rev">
+      <div class="benefit-num">06</div>
+      <div class="benefit-body">
+        <div class="benefit-title">Acne Control</div>
+        <p class="benefit-desc">Antibacterial properties from natural ingredients work to prevent breakouts without over-drying. Calmer skin. Fewer flare-ups.</p>
+      </div>
+    </div>
+    <div class="benefit-row rev">
+      <div class="benefit-num">07</div>
+      <div class="benefit-body">
+        <div class="benefit-title">Refreshing Every Time</div>
+        <p class="benefit-desc">Each wash feels like a ritual — not a chore. Cool, calming, completely natural. Your skin will notice the difference within a week.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INGREDIENTS ═══ -->
+<section id="ingredients">
+  <div class="ing-head">
+    <span class="section-label rev">Formulation</span>
+    <h2 class="section-title rev">Built around<br/><em style="font-style:italic;color:var(--gold2)">one great ingredient.</em></h2>
+    <p class="ing-notice rev">
+      DARPAN Classic is powered by Multani Mitti.
+      Supporting botanicals are included in the formulation — present and functional,
+      but Multani Mitti is what drives the results.
+    </p>
+  </div>
+  <div class="ing-grid">
+
+    <div class="ing-card star rev">
+      <span class="ing-emoji">🪨</span>
+      <div class="ing-name">Multani Mitti</div>
+      <div class="ing-hindi">Fuller's Earth Clay</div>
+      <span class="ing-tag primary">Star Ingredient</span>
+      <p class="ing-desc">The hero. Used in Indian skincare for centuries — mineral-rich clay that deep cleanses, absorbs excess oil, tightens pores, and detoxes skin without any harsh chemicals.</p>
+    </div>
+
+    <div class="ing-card rev">
+      <span class="ing-emoji">🌿</span>
+      <div class="ing-name">Aloe Vera</div>
+      <div class="ing-hindi">घृतकुमारी</div>
+      <span class="ing-tag support">Supporting</span>
+      <p class="ing-desc">Nature's coolant. Soothes irritation, aids hydration, and calms skin — especially effective after sun exposure or for sensitive skin types.</p>
+    </div>
+
+    <div class="ing-card rev">
+      <span class="ing-emoji">🌺</span>
+      <div class="ing-name">Saffron Extract</div>
+      <div class="ing-hindi">केसर</div>
+      <span class="ing-tag support">Supporting</span>
+      <p class="ing-desc">The world's most valued spice. Present in the formulation for its skin-brightening and antioxidant properties — subtle but meaningful contribution.</p>
+    </div>
+
+    <div class="ing-card rev">
+      <span class="ing-emoji">🌹</span>
+      <div class="ing-name">Rose Petals</div>
+      <div class="ing-hindi">गुलाब</div>
+      <span class="ing-tag support">Supporting</span>
+      <p class="ing-desc">Helps balance skin pH and contributes to the bar's natural fragrance. No artificial scent — just real rose.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section id="pricing">
+  <div class="pricing-head rev">
+    <span class="section-label">Pricing</span>
+    <h2 class="section-title">Simple, transparent pricing.</h2>
+    <p style="margin-top:.8rem;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--amber);font-size:1.05rem;">
+      More soaps, more savings. Order directly via WhatsApp.
+    </p>
+  </div>
+
+  <div class="pricing-grid">
+
+    <!-- Single -->
+    <div class="price-card rev">
+      <div class="price-tier">Single</div>
+      <div class="price-qty">1 Soap Bar</div>
+      <div class="price-amount">₹149</div>
+      <div class="price-per">₹149 per soap</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li>1 × DARPAN Classic (100g)</li>
+        <li>Free delivery on prepaid</li>
+        <li>Suitable for personal trial</li>
+        <li>WhatsApp ordering</li>
+      </ul>
+      <a href="https://wa.me/916398068797?text=Hi%2C+I+want+to+order+1+DARPAN+soap+%E2%80%94+Single+pack+%E2%82%B9149."
+         class="price-cta" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.862L0 24l6.305-1.505A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        Order via WhatsApp
+      </a>
+    </div>
+
+    <!-- Value Pack — FEATURED -->
+    <div class="price-card featured rev">
+      <div class="price-badge">Most Popular</div>
+      <div class="price-tier">Value Pack</div>
+      <div class="price-qty">3 Soap Bars</div>
+      <div class="price-amount">₹399</div>
+      <div class="price-per">₹133 per soap</div>
+      <span class="price-save">You save ₹48</span>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li>3 × DARPAN Classic (100g each)</li>
+        <li>Free delivery included</li>
+        <li>Best for 1–2 months of use</li>
+        <li>Ideal gift option</li>
+        <li>WhatsApp ordering</li>
+      </ul>
+      <a href="https://wa.me/916398068797?text=Hi%2C+I+want+to+order+3+DARPAN+soaps+%E2%80%94+Value+Pack+%E2%82%B9399."
+         class="price-cta" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.862L0 24l6.305-1.505A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        Order via WhatsApp
+      </a>
+    </div>
+
+    <!-- Family Pack -->
+    <div class="price-card rev">
+      <div class="price-tier">Family Pack</div>
+      <div class="price-qty">6 Soap Bars</div>
+      <div class="price-amount">₹749</div>
+      <div class="price-per">₹125 per soap</div>
+      <span class="price-save">You save ₹145</span>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li>6 × DARPAN Classic (100g each)</li>
+        <li>Free priority delivery</li>
+        <li>3–4 months supply</li>
+        <li>Perfect for families</li>
+        <li>WhatsApp ordering</li>
+      </ul>
+      <a href="https://wa.me/916398068797?text=Hi%2C+I+want+to+order+6+DARPAN+soaps+%E2%80%94+Family+Pack+%E2%82%B9749."
+         class="price-cta" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.862L0 24l6.305-1.505A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        Order via WhatsApp
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ VIDEO REELS ═══ -->
+<section id="reels">
+  <div class="reels-head rev">
+    <span class="section-label">In Action</span>
+    <h2 class="section-title">The DARPAN experience,<br/><em style="font-style:italic;color:var(--gold)">captured.</em></h2>
+  </div>
+  <div class="reels-row">
+    <div class="reel-phone">
+      <div class="reel-notch"></div>
+      <video class="reel-vid" autoplay muted loop playsinline>
+        <source src="reel1.mp4" type="video/mp4"/>
+      </video>
+    </div>
+    <div class="reel-phone">
+      <div class="reel-notch"></div>
+      <video class="reel-vid" autoplay muted loop playsinline>
+        <source src="reel2.mp4" type="video/mp4"/>
+      </video>
+    </div>
+    <div class="reel-phone">
+      <div class="reel-notch"></div>
+      <video class="reel-vid" autoplay muted loop playsinline>
+        <source src="reel4.mp4" type="video/mp4"/>
+      </video>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRODUCT CATALOG ═══ -->
+<section id="catalog">
+  <div class="catalog-head rev">
+    <span class="section-label">The Collection</span>
+    <h2 class="section-title">DARPAN Products</h2>
+    <p class="catalog-note">Starting with one great soap. More on the way.</p>
+  </div>
+
+  <!-- 
+  ╔══════════════════════════════════════════════════╗
+  ║  HOW TO ADD A NEW PRODUCT:                      ║
+  ║  1. Copy a .prod-card div below                 ║
+  ║  2. Remove .dim class (if coming soon)          ║
+  ║  3. Change .prod-sticker from "soon" to "live"  ║
+  ║  4. Update image src, name, description, price  ║
+  ║  5. Update WhatsApp link with product name      ║
+  ╚══════════════════════════════════════════════════╝
+  -->
+  <div class="catalog-grid">
+
+    <!-- ── PRODUCT 1: DARPAN Classic ── LIVE ── -->
+    <div class="prod-card rev">
+      <div class="prod-img-wrap">
+        <img src="soap1.png" alt="DARPAN Classic Soap"/>
+        <div class="prod-sticker live">Available Now</div>
+      </div>
+      <div class="prod-body">
+        <div class="prod-name">DARPAN Classic</div>
+        <div class="prod-sub">Multani Mitti Natural Soap</div>
+        <p class="prod-desc">Our flagship bar. Built around Multani Mitti as its primary ingredient — deep cleanses, controls oil, tightens pores, and is gentle enough for daily use on all skin types. 100g per bar, Made with thoughtfully selected ingredients, made in India.</p>
+        <div class="prod-specs">
+          <div><span class="prod-spec-num">100g</span><span class="prod-spec-label">Net Wt.</span></div>
+          <div><span class="prod-spec-num">0</span><span class="prod-spec-label">Chemicals</span></div>
+          <div><span class="prod-spec-num">All</span><span class="prod-spec-label">Skin Types</span></div>
+        </div>
+      </div>
+      <div class="prod-foot">
+        <div class="prod-price"><span class="cur">₹</span>149</div>
+        <a href="https://wa.me/919999999999?text=Hi%2C+I+want+to+order+DARPAN+Classic+Soap."
+           class="prod-order-btn" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.862L0 24l6.305-1.505A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+          Order Now
+        </a>
+      </div>
+    </div>
+
+    <!-- ── PRODUCT 2: Coming Soon ── TEMPLATE ── -->
+    <div class="prod-card dim rev">
+      <div class="prod-img-wrap" style="background:linear-gradient(135deg,#1a1a2e,#2d1f5e)">
+        <div class="prod-img-placeholder">🌙</div>
+        <div class="prod-sticker soon">Coming Soon</div>
+      </div>
+      <div class="prod-body">
+        <div class="prod-name">DARPAN Night</div>
+        <div class="prod-sub">Deep Repair Overnight Bar</div>
+        <p class="prod-desc">Formulated for overnight use — richer lather, deeper nourishment, slower absorption. Designed to work while you sleep. Launch date to be announced.</p>
+        <div class="prod-specs">
+          <div><span class="prod-spec-num">TBA</span><span class="prod-spec-label">Launching</span></div>
+        </div>
+      </div>
+      <div class="prod-foot">
+        <div class="prod-price muted">Notify Me</div>
+        <a href="https://wa.me/919999999999?text=Please+notify+me+when+DARPAN+Night+launches."
+           class="prod-order-btn gold-btn" target="_blank">Get Notified</a>
+      </div>
+    </div>
+
+    <!-- ── PRODUCT 3: Coming Soon ── TEMPLATE ── -->
+    <div class="prod-card dim rev">
+      <div class="prod-img-wrap" style="background:linear-gradient(135deg,#0d2818,#1a4a2a)">
+        <div class="prod-img-placeholder">🌿</div>
+        <div class="prod-sticker soon">Coming Soon</div>
+      </div>
+      <div class="prod-body">
+        <div class="prod-name">DARPAN Green</div>
+        <div class="prod-sub">Neem + Tulsi Purifying Bar</div>
+        <p class="prod-desc">For acne-prone and combination skin — Neem's antibacterial properties and Tulsi's natural detox, built on a Multani Mitti base. Our most targeted formulation yet.</p>
+        <div class="prod-specs">
+          <div><span class="prod-spec-num">TBA</span><span class="prod-spec-label">Launching</span></div>
+        </div>
+      </div>
+      <div class="prod-foot">
+        <div class="prod-price muted">Notify Me</div>
+        <a href="https://wa.me/919999999999?text=Please+notify+me+when+DARPAN+Green+launches."
+           class="prod-order-btn gold-btn" target="_blank">Get Notified</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ SHOWCASE ═══ -->
+<section id="showcase">
+  <div class="showcase-inner">
+    <div class="showcase-visual rev">
+      <img src="hero.jpg" alt="DARPAN Soap" class="show-img"/>
+      <div class="show-badge">Natural</div>
+    </div>
+    <div class="showcase-text rev">
+      <span class="section-label">The Product</span>
+      <h2 class="show-title">One bar.<br/>Complete skin care.</h2>
+      <p class="show-desc">Made in India — each bar is crafted without compromise. No synthetic fragrance, no parabens, no SLS. Just effective, honest skin care that works from day one and improves over time.</p>
+      <div class="show-specs">
+        <div><span class="show-spec-num">100g</span><span class="show-spec-label">Net Weight</span></div>
+        <div><span class="show-spec-num">7+</span><span class="show-spec-label">Ingredients</span></div>
+        <div><span class="show-spec-num">0</span><span class="show-spec-label">Chemicals</span></div>
+        <div><span class="show-spec-num">All</span><span class="show-spec-label">Skin Types</span></div>
+      </div>
+      <img src="benifits.png" alt="DARPAN Benefits" class="show-model-img"/>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS (Firebase — Real Reviews) ═══ -->
+<section id="testimonials">
+  <div class="testi-head">
+    <span class="section-label rev">Reviews</span>
+    <h2 class="section-title rev">Real people.<br/><em style="font-style:italic;color:var(--gold2)">Real results.</em></h2>
+    <span class="testi-notice rev">All reviews are from verified customers via Firebase — no edits, no fakes.</span>
+  </div>
+
+  <div class="testi-track-wrap">
+    <div class="testi-track" id="testi-track">
+      <p class="no-rev-msg" style="padding:3rem;">Loading reviews…</p>
+    </div>
+  </div>
+
+  <!-- ─ Review Form ─ -->
+  <div class="rev-form-wrap rev">
+    <div class="rev-form-title">Share Your Experience</div>
+    <p class="rev-form-sub">Genuine feedback — positive or critical, both are welcome.</p>
+
+    <div class="form-row2">
+      <div class="form-grp">
+        <label class="f-label">Your Name *</label>
+        <input type="text" id="rev-name" class="f-inp" placeholder="e.g. Priya Sharma"/>
+      </div>
+      <div class="form-grp">
+        <label class="f-label">City (optional)</label>
+        <input type="text" id="rev-city" class="f-inp" placeholder="e.g. Delhi"/>
+      </div>
+    </div>
+
+    <div class="form-grp">
+      <label class="f-label">Rating</label>
+      <div class="star-row">
+        <button class="star-btn active" onclick="updateStarDisplay(1)" type="button">★</button>
+        <button class="star-btn active" onclick="updateStarDisplay(2)" type="button">★</button>
+        <button class="star-btn active" onclick="updateStarDisplay(3)" type="button">★</button>
+        <button class="star-btn active" onclick="updateStarDisplay(4)" type="button">★</button>
+        <button class="star-btn active" onclick="updateStarDisplay(5)" type="button">★</button>
+      </div>
+      <input type="hidden" id="rev-rating" value="5"/>
+    </div>
+
+    <div class="form-grp">
+      <label class="f-label">Your Review *</label>
+      <textarea id="rev-text" class="f-ta" placeholder="Share your experience — what you liked, what changed, anything honest…"></textarea>
+    </div>
+
+    <button class="rev-sub-btn" id="rev-submit" onclick="submitReview()">Submit Review</button>
+    <div id="rev-msg" class="rev-msg"></div>
+    <p class="rev-disclaimer">Reviews are published after moderation. No spam, no incentivized reviews.</p>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section id="cta">
+  <span class="cta-eyebrow rev">Ready to start?</span>
+  <h2 class="cta-title rev">
+    Order Your<br/>
+    <span style="color:var(--gold)">DARPAN Soap</span>
+  </h2>
+  <p class="cta-sub rev">Fast delivery. No app needed. One WhatsApp message and you're done.</p>
+  <div class="cta-btn-wrap rev">
+    <div class="rr"></div><div class="rr"></div><div class="rr"></div>
+    <a href="https://wa.me/919999999999?text=Hi%2C+I+want+to+order+DARPAN+soap." class="cta-wa" target="_blank">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.862L0 24l6.305-1.505A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+      Chat on WhatsApp
+    </a>
+  </div>
+  <span class="cta-made">Made in India with Mittl &amp; Mohabbat</span>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="foot-logo">DARPAN</div>
+  <p class="foot-tag">Natural skincare, honestly made.</p>
+  <div class="foot-icons">
+    <a href="#" class="foot-icon" title="Instagram">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+    </a>
+    <a href="https://wa.me/919999999999" class="foot-icon" title="WhatsApp" target="_blank">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.862L0 24l6.305-1.505A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+    </a>
+  </div>
+  <p class="foot-copy">© 2025 DARPAN Natural Skincare. All rights reserved.</p>
+</footer>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+  
+const cur = document.getElementById('cur');
+const crg = document.getElementById('cur-ring');
+let mx=-100,my=-100,rx=-100,ry=-100;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function ac(){
+  rx+=(mx-rx)*.11; ry+=(my-ry)*.11;
+  cur.style.cssText=`left:${mx}px;top:${my}px`;
+  crg.style.cssText=`left:${rx}px;top:${ry}px`;
+  requestAnimationFrame(ac);
+})();
+document.querySelectorAll('a,button,.benefit-row,.ing-card,.reel-phone,.prod-card,.price-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.classList.add('cur-big');crg.style.opacity='.2';});
+  el.addEventListener('mouseleave',()=>{cur.classList.remove('cur-big');crg.style.opacity='.55';});
+});
+
+/* ── SCROLL PROGRESS ── */
+window.addEventListener('scroll',()=>{
+  const p=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;
+  document.getElementById('spb').style.width=p+'%';
+},{passive:true});
+
+/* ── TICKER BUILD ── */
+const tickerItems=[
+  'Multani Mitti','Chemical Free','Deep Cleanse',
+  'Made in India','Pore Tightening','Natural Ingredients',
+  'All Skin Types','Gentle Formula','Oil Control','Skin Brightening'
+];
+const tk=document.getElementById('tk');
+const chunk=tickerItems.map(t=>`<span class="ticker-item">${t}</span><span class="ticker-item ticker-dot">·</span>`).join('');
+tk.innerHTML=chunk+chunk; /* duplicate for infinite */
+
+/* ── LOADER ── */
+const loader=document.getElementById('loader');
+const ldLogo=loader.querySelector('.ld-logo');
+const ldSub=loader.querySelector('.ld-sub');
+setTimeout(()=>{
+  ldLogo.style.transition='all .85s cubic-bezier(.23,1,.32,1)';
+  ldLogo.style.opacity='1'; ldLogo.style.transform='translateY(0)';
+},180);
+setTimeout(()=>{
+  ldSub.style.transition='all .85s .2s';
+  ldSub.style.opacity='1';
+},440);
+setTimeout(()=>{
+  loader.style.transition='opacity .75s ease';
+  loader.style.opacity='0'; loader.style.pointerEvents='none';
+  const nav=document.getElementById('nav');
+  nav.style.opacity='1';
+  animHero();
+},2100);
+
+function animHero(){
+  const els=['.hero-eyebrow','.hero-title','.hero-sub','.hero-cta'];
+  els.forEach((s,i)=>{
+    const el=document.querySelector(s);
+    if(!el)return;
+    setTimeout(()=>{
+      el.style.transition='all .9s cubic-bezier(.23,1,.32,1)';
+      el.style.opacity='1'; el.style.transform='translateY(0)';
+    },i*140);
+  });
+}
+
+/* ── NAV SCROLL ── */
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled', window.scrollY>60);
+},{passive:true});
+
+/* ── GSAP SCROLL ANIMATIONS ── */
+gsap.registerPlugin(ScrollTrigger);
+
+/* Generic reveals */
+document.querySelectorAll('.rev').forEach(el=>{
+  gsap.fromTo(el,{opacity:0,y:48},{
+    opacity:1,y:0,duration:.95,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 89%',toggleActions:'play none none none'}
+  });
+});
+
+/* Benefit rows stagger */
+gsap.utils.toArray('.benefit-row').forEach((row,i)=>{
+  gsap.fromTo(row,{opacity:0,x:-30},{
+    opacity:1,x:0,duration:.8,delay:i*.06,ease:'power3.out',
+    scrollTrigger:{trigger:row,start:'top 90%',toggleActions:'play none none none'}
+  });
+});
+
+/* Ingredient cards */
+gsap.utils.toArray('.ing-card').forEach((c,i)=>{
+  gsap.fromTo(c,{opacity:0,y:60},{
+    opacity:1,y:0,duration:.85,delay:i*.1,ease:'power3.out',
+    scrollTrigger:{trigger:c,start:'top 92%',toggleActions:'play none none none'}
+  });
+});
+
+/* Pricing cards */
+gsap.utils.toArray('.price-card').forEach((c,i)=>{
+  gsap.fromTo(c,{opacity:0,y:50,scale:.97},{
+    opacity:1,y:0,scale:c.classList.contains('featured')?1.03:1,
+    duration:.85,delay:i*.12,ease:'power3.out',
+    scrollTrigger:{trigger:c,start:'top 90%',toggleActions:'play none none none'}
+  });
+});
+
+/* Product cards */
+gsap.utils.toArray('.prod-card').forEach((c,i)=>{
+  gsap.fromTo(c,{opacity:0,y:56},{
+    opacity:1,y:0,duration:.85,delay:i*.12,ease:'power3.out',
+    scrollTrigger:{trigger:c,start:'top 90%',toggleActions:'play none none none'}
+  });
+});
+
+/* Reel phones */
+gsap.utils.toArray('.reel-phone').forEach((p,i)=>{
+  gsap.fromTo(p,{opacity:0,y:70,rotateY:i%2===0?-12:12},{
+    opacity:1,y:0,rotateY:0,duration:1,delay:i*.14,ease:'power3.out',
+    scrollTrigger:{trigger:'#reels',start:'top 80%',toggleActions:'play none none none'}
+  });
+});
+
+/* Hero parallax */
+gsap.to('.hero-content',{yPercent:-12,ease:'none',
+  scrollTrigger:{trigger:'#hero',scrub:true}
+});
+
+/* Magnetic buttons */
+document.querySelectorAll('.wa-btn,.cta-wa,.nav-wa').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    const dx=(e.clientX-(r.left+r.width/2))*.32;
+    const dy=(e.clientY-(r.top+r.height/2))*.32;
+    btn.style.transform=`translate(${dx}px,${dy}px)`;
+  });
+  btn.addEventListener('mouseleave',()=>{
+    btn.style.transition='transform .55s cubic-bezier(.23,1,.32,1)';
+    btn.style.transform='';
+  });
+});
+
+/* ── STAR HOVER ── */
+const starBtns=document.querySelectorAll('.star-btn');
+starBtns.forEach((btn,idx)=>{
+  btn.addEventListener('mouseenter',()=>{
+    starBtns.forEach((s,i)=>s.classList.toggle('active',i<=idx));
+  });
+  btn.addEventListener('mouseleave',()=>{
+    const r=parseInt(document.getElementById('rev-rating').value)||5;
+    starBtns.forEach((s,i)=>s.classList.toggle('active',i<r));
+  });
+});
+
+
+</script>
+
+
+</body>
+</html>
