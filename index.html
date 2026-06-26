@@ -2,6 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>DARPAN — Multani Mitti Natural Soap</title>
@@ -9,25 +13,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
 
-
-
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<!-- ─── CURSOR ─── -->
 <div id="cur"></div>
 <div id="cur-ring"></div>
 <div id="spb"></div>
 
-<!-- ─── LOADER ─── -->
 <div id="loader">
   <div class="ld-logo">DARPAN</div>
   <div class="ld-sub">Multani Mitti Natural Soap</div>
   <div class="ld-line"></div>
 </div>
 
-<!-- ─── NAV ─── -->
 <nav id="nav">
   <a class="nav-brand" href="#">DARPAN</a>
   <div class="nav-right">
@@ -40,11 +39,9 @@
   </div>
 </nav>
 
-<!-- ═══ HERO ═══ -->
 <section id="hero">
-  <!-- 📁 reel3.mp4 = cinematic woman shot — best for hero bg -->
   <video class="hero-vid" autoplay muted loop playsinline>
-    <source src="reel3.mp4" type="video/mp4"/>
+    <source src="hero.mp4" type="video/mp4"/>
     <source src="reel1.mp4" type="video/mp4"/>
   </video>
   <div class="hero-ov"></div>
@@ -69,14 +66,11 @@
   </div>
 </section>
 
-<!-- ─── TICKER ─── -->
 <div id="ticker">
   <div class="ticker-track" id="tk">
-    <!-- duplicated in JS for true infinite loop -->
   </div>
 </div>
 
-<!-- ═══ STORY ═══ -->
 <section id="story">
   <div class="story-head rev">
     <span class="section-label">The Reality</span>
@@ -111,7 +105,6 @@
   </div>
 </section>
 
-<!-- ═══ BENEFITS ═══ -->
 <section id="benefits">
   <div class="benefits-head rev">
     <span class="section-label">Why DARPAN</span>
@@ -151,7 +144,7 @@
       <div class="benefit-num">05</div>
       <div class="benefit-body">
         <div class="benefit-title">Gentle for All Skin Types</div>
-        <p class="benefit-desc">Zero synthetic chemicals, zero parabens, zero SLS. Safe for sensitive skin, oily skin, combination skin — safe for everyone, every day.</p>
+        <p class="benefit-desc">Safe for sensitive skin, oily skin, combination skin — safe for everyone, every day.</p>
       </div>
     </div>
     <div class="benefit-row rev">
@@ -171,7 +164,6 @@
   </div>
 </section>
 
-<!-- ═══ INGREDIENTS ═══ -->
 <section id="ingredients">
   <div class="ing-head">
     <span class="section-label rev">Formulation</span>
@@ -219,7 +211,6 @@
   </div>
 </section>
 
-<!-- ═══ PRICING ═══ -->
 <section id="pricing">
   <div class="pricing-head rev">
     <span class="section-label">Pricing</span>
@@ -231,7 +222,6 @@
 
   <div class="pricing-grid">
 
-    <!-- Single -->
     <div class="price-card rev">
       <div class="price-tier">Single</div>
       <div class="price-qty">1 Soap Bar</div>
@@ -251,7 +241,6 @@
       </a>
     </div>
 
-    <!-- Value Pack — FEATURED -->
     <div class="price-card featured rev">
       <div class="price-badge">Most Popular</div>
       <div class="price-tier">Value Pack</div>
@@ -274,7 +263,7 @@
       </a>
     </div>
 
-    <!-- Family Pack -->
+
     <div class="price-card rev">
       <div class="price-tier">Family Pack</div>
       <div class="price-qty">6 Soap Bars</div>
@@ -298,8 +287,6 @@
 
   </div>
 </section>
-
-<!-- ═══ VIDEO REELS ═══ -->
 <section id="reels">
   <div class="reels-head rev">
     <span class="section-label">In Action</span>
@@ -327,7 +314,6 @@
   </div>
 </section>
 
-<!-- ═══ PRODUCT CATALOG ═══ -->
 <section id="catalog">
   <div class="catalog-head rev">
     <span class="section-label">The Collection</span>
@@ -335,19 +321,8 @@
     <p class="catalog-note">Starting with one great soap. More on the way.</p>
   </div>
 
-  <!-- 
-  ╔══════════════════════════════════════════════════╗
-  ║  HOW TO ADD A NEW PRODUCT:                      ║
-  ║  1. Copy a .prod-card div below                 ║
-  ║  2. Remove .dim class (if coming soon)          ║
-  ║  3. Change .prod-sticker from "soon" to "live"  ║
-  ║  4. Update image src, name, description, price  ║
-  ║  5. Update WhatsApp link with product name      ║
-  ╚══════════════════════════════════════════════════╝
-  -->
   <div class="catalog-grid">
 
-    <!-- ── PRODUCT 1: DARPAN Classic ── LIVE ── -->
     <div class="prod-card rev">
       <div class="prod-img-wrap">
         <img src="soap1.png" alt="DARPAN Classic Soap"/>
@@ -359,7 +334,6 @@
         <p class="prod-desc">Our flagship bar. Built around Multani Mitti as its primary ingredient — deep cleanses, controls oil, tightens pores, and is gentle enough for daily use on all skin types. 100g per bar, Made with thoughtfully selected ingredients, made in India.</p>
         <div class="prod-specs">
           <div><span class="prod-spec-num">100g</span><span class="prod-spec-label">Net Wt.</span></div>
-          <div><span class="prod-spec-num">0</span><span class="prod-spec-label">Chemicals</span></div>
           <div><span class="prod-spec-num">All</span><span class="prod-spec-label">Skin Types</span></div>
         </div>
       </div>
@@ -373,7 +347,6 @@
       </div>
     </div>
 
-    <!-- ── PRODUCT 2: Coming Soon ── TEMPLATE ── -->
     <div class="prod-card dim rev">
       <div class="prod-img-wrap" style="background:linear-gradient(135deg,#1a1a2e,#2d1f5e)">
         <div class="prod-img-placeholder">🌙</div>
@@ -394,7 +367,6 @@
       </div>
     </div>
 
-    <!-- ── PRODUCT 3: Coming Soon ── TEMPLATE ── -->
     <div class="prod-card dim rev">
       <div class="prod-img-wrap" style="background:linear-gradient(135deg,#0d2818,#1a4a2a)">
         <div class="prod-img-placeholder">🌿</div>
@@ -414,25 +386,22 @@
            class="prod-order-btn gold-btn" target="_blank">Get Notified</a>
       </div>
     </div>
-
   </div>
 </section>
 
-<!-- ═══ SHOWCASE ═══ -->
 <section id="showcase">
   <div class="showcase-inner">
     <div class="showcase-visual rev">
       <img src="hero.jpg" alt="DARPAN Soap" class="show-img"/>
-      <div class="show-badge">Natural</div>
+      <div class="show-badge">Daily <br> Ritual</div>
     </div>
     <div class="showcase-text rev">
       <span class="section-label">The Product</span>
       <h2 class="show-title">One bar.<br/>Complete skin care.</h2>
-      <p class="show-desc">Made in India — each bar is crafted without compromise. No synthetic fragrance, no parabens, no SLS. Just effective, honest skin care that works from day one and improves over time.</p>
+      <p class="show-desc">Made in India — each bar is crafted without compromise.honest skin care that works from day one and improves over time.</p>
       <div class="show-specs">
         <div><span class="show-spec-num">100g</span><span class="show-spec-label">Net Weight</span></div>
         <div><span class="show-spec-num">7+</span><span class="show-spec-label">Ingredients</span></div>
-        <div><span class="show-spec-num">0</span><span class="show-spec-label">Chemicals</span></div>
         <div><span class="show-spec-num">All</span><span class="show-spec-label">Skin Types</span></div>
       </div>
       <img src="benifits.png" alt="DARPAN Benefits" class="show-model-img"/>
@@ -440,9 +409,6 @@
   </div>
 </section>
 
-
-
-<!-- ═══ CTA ═══ -->
 <section id="cta">
   <span class="cta-eyebrow rev">Ready to start?</span>
   <h2 class="cta-title rev">
@@ -460,7 +426,6 @@
   <span class="cta-made">Made in India with Mittl &amp; Mohabbat</span>
 </section>
 
-<!-- ═══ FOOTER ═══ -->
 <footer>
   <div class="foot-logo">DARPAN</div>
   <p class="foot-tag">Natural skincare, honestly made.</p>
@@ -475,7 +440,6 @@
   <p class="foot-copy">© 2025 DARPAN Natural Skincare. All rights reserved.</p>
 </footer>
 
-<!-- ═══ SCRIPTS ═══ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
@@ -495,23 +459,20 @@ document.querySelectorAll('a,button,.benefit-row,.ing-card,.reel-phone,.prod-car
   el.addEventListener('mouseleave',()=>{cur.classList.remove('cur-big');crg.style.opacity='.55';});
 });
 
-/* ── SCROLL PROGRESS ── */
 window.addEventListener('scroll',()=>{
   const p=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;
   document.getElementById('spb').style.width=p+'%';
 },{passive:true});
 
-/* ── TICKER BUILD ── */
 const tickerItems=[
-  'Multani Mitti','Chemical Free','Deep Cleanse',
+  'Multani Mitti','Deep Cleanse',
   'Made in India','Pore Tightening','Natural Ingredients',
   'All Skin Types','Gentle Formula','Oil Control','Skin Brightening'
 ];
 const tk=document.getElementById('tk');
 const chunk=tickerItems.map(t=>`<span class="ticker-item">${t}</span><span class="ticker-item ticker-dot">·</span>`).join('');
-tk.innerHTML=chunk+chunk; /* duplicate for infinite */
-
-/* ── LOADER ── */
+tk.innerHTML=chunk+chunk;
+  
 const loader=document.getElementById('loader');
 const ldLogo=loader.querySelector('.ld-logo');
 const ldSub=loader.querySelector('.ld-sub');
@@ -543,16 +504,13 @@ function animHero(){
   });
 }
 
-/* ── NAV SCROLL ── */
 const nav=document.getElementById('nav');
 window.addEventListener('scroll',()=>{
   nav.classList.toggle('scrolled', window.scrollY>60);
 },{passive:true});
 
-/* ── GSAP SCROLL ANIMATIONS ── */
 gsap.registerPlugin(ScrollTrigger);
 
-/* Generic reveals */
 document.querySelectorAll('.rev').forEach(el=>{
   gsap.fromTo(el,{opacity:0,y:48},{
     opacity:1,y:0,duration:.95,ease:'power3.out',
@@ -560,7 +518,6 @@ document.querySelectorAll('.rev').forEach(el=>{
   });
 });
 
-/* Benefit rows stagger */
 gsap.utils.toArray('.benefit-row').forEach((row,i)=>{
   gsap.fromTo(row,{opacity:0,x:-30},{
     opacity:1,x:0,duration:.8,delay:i*.06,ease:'power3.out',
@@ -568,7 +525,6 @@ gsap.utils.toArray('.benefit-row').forEach((row,i)=>{
   });
 });
 
-/* Ingredient cards */
 gsap.utils.toArray('.ing-card').forEach((c,i)=>{
   gsap.fromTo(c,{opacity:0,y:60},{
     opacity:1,y:0,duration:.85,delay:i*.1,ease:'power3.out',
@@ -576,7 +532,6 @@ gsap.utils.toArray('.ing-card').forEach((c,i)=>{
   });
 });
 
-/* Pricing cards */
 gsap.utils.toArray('.price-card').forEach((c,i)=>{
   gsap.fromTo(c,{opacity:0,y:50,scale:.97},{
     opacity:1,y:0,scale:c.classList.contains('featured')?1.03:1,
@@ -585,7 +540,6 @@ gsap.utils.toArray('.price-card').forEach((c,i)=>{
   });
 });
 
-/* Product cards */
 gsap.utils.toArray('.prod-card').forEach((c,i)=>{
   gsap.fromTo(c,{opacity:0,y:56},{
     opacity:1,y:0,duration:.85,delay:i*.12,ease:'power3.out',
@@ -593,7 +547,6 @@ gsap.utils.toArray('.prod-card').forEach((c,i)=>{
   });
 });
 
-/* Reel phones */
 gsap.utils.toArray('.reel-phone').forEach((p,i)=>{
   gsap.fromTo(p,{opacity:0,y:70,rotateY:i%2===0?-12:12},{
     opacity:1,y:0,rotateY:0,duration:1,delay:i*.14,ease:'power3.out',
@@ -601,12 +554,11 @@ gsap.utils.toArray('.reel-phone').forEach((p,i)=>{
   });
 });
 
-/* Hero parallax */
+
 gsap.to('.hero-content',{yPercent:-12,ease:'none',
   scrollTrigger:{trigger:'#hero',scrub:true}
 });
 
-/* Magnetic buttons */
 document.querySelectorAll('.wa-btn,.cta-wa,.nav-wa').forEach(btn=>{
   btn.addEventListener('mousemove',e=>{
     const r=btn.getBoundingClientRect();
@@ -620,7 +572,6 @@ document.querySelectorAll('.wa-btn,.cta-wa,.nav-wa').forEach(btn=>{
   });
 });
 
-/* ── STAR HOVER ── */
 const starBtns=document.querySelectorAll('.star-btn');
 starBtns.forEach((btn,idx)=>{
   btn.addEventListener('mouseenter',()=>{
@@ -632,9 +583,6 @@ starBtns.forEach((btn,idx)=>{
   });
 });
 
-
 </script>
-
-
 </body>
 </html>
